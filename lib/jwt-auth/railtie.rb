@@ -4,7 +4,7 @@ module JwtAuth
 
 		initializer 'jwt_auth.initialize' do |app|
 			require 'jwt-auth/rack/j_auth'
-			app.middleware.use Rack::Auth, config.jwt_auth
+			app.middleware.use Rack::JAuth, config.jwt_auth
 		end
 	end
 end
