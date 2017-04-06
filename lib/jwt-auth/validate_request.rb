@@ -45,7 +45,7 @@ module JwtAuth
 		end
 
 		def set_jwt_in_session
-			request.session['jwt-user-data'] = JwtToken.new(request.cookies[cookie_name])
+			request.session[session_name] = JwtToken.new(request.cookies[cookie_name])
 		end
 
 		def pass_along

@@ -12,15 +12,15 @@ describe JwtAuth::AuthRequest do
 	context 'with default root path' do
 
 		describe '#excluded_path?' do
-			before { get request }
+			before { send_entry_req(request_entry_arg) }
 			context 'when request is excluded' do
-				let(:run_config) { {exclude_paths: [request]} }
+				let(:run_config) { {exclude_paths: [request_entry_arg]} }
 				it 'returns true' do
 					expect(subject.excluded_path?).to be true
 				end
 			end
 			context 'when request is not excluded' do
-				let(:run_config) { {exclude_paths: ['']} }
+				let(:run_config) { {exclude_paths: []} }
 				it 'returns false' do
 					expect(subject.excluded_path?).to be false
 				end
@@ -28,15 +28,15 @@ describe JwtAuth::AuthRequest do
 		end
 
 		describe '#session_path?' do
-			before { get request }
+			before { send_entry_req(request_entry_arg) }
 			context 'when request is a session path' do
-				let(:run_config) { {session_paths:[request]} }
+				let(:run_config) { {session_paths:[request_entry_arg]} }
 				it 'returns true' do
 					expect(subject.session_path?).to be true
 				end
 			end
 			context 'when request is not a session path' do
-				let(:run_config) { {session_paths:[""]} }
+				let(:run_config) { {session_paths:[]} }
 				it 'returns false' do
 					expect(subject.session_path?).to be false
 				end
@@ -52,7 +52,7 @@ describe JwtAuth::AuthRequest do
 				end
 			end
 			context 'when request is not "/logout"' do
-				before { get request }
+				before { send_entry_req(request_entry_arg) }
 				it 'returns false' do
 					expect(subject.logout?).to be false
 				end
@@ -61,7 +61,7 @@ describe JwtAuth::AuthRequest do
 
 		describe '#token_present?' do
 			let(:run_config) { {} }
-			before { get request }
+			before { send_entry_req(request_entry_arg) }
 			context 'with a set token' do
 				let(:app) { MockLogin.new(NullAppStub.new) }
 				it 'returns true' do
@@ -86,15 +86,17 @@ describe JwtAuth::AuthRequest do
 	context 'with assigned root path' do
 
 		describe '#excluded_path?' do
-			before { get(root+request) }
+			before { send_entry_req(request_entry_arg, root) }
 			context 'when request is excluded' do
-				let(:run_config) { {exclude_paths:[request], url_root: root} }
+				let(:run_config) do
+					{exclude_paths: [request_entry_arg], url_root: root}
+				end
 				it 'returns true' do
 					expect(subject.excluded_path?).to be true
 				end
 			end
 			context 'when request is not excluded' do
-				let(:run_config) { {exclude_paths: [''], url_root: root} }
+				let(:run_config) { {exclude_paths: [], url_root: root} }
 				it 'returns false' do
 					expect(subject.excluded_path?).to be false
 				end
@@ -102,15 +104,17 @@ describe JwtAuth::AuthRequest do
 		end
 
 		describe '#session_path?' do
-			before { get(root+request) }
-			context 'when request is session route' do
-				let(:run_config) { {session_paths:[request], url_root: root} }
+			before { send_entry_req(request_entry_arg, root) }
+			context 'when request is a session path' do
+				let(:run_config) do
+					{session_paths:[request_entry_arg], url_root: root}
+				end
 				it 'returns true' do
 					expect(subject.session_path?).to be true
 				end
 			end
-			context 'when request is not session route' do
-				let(:run_config) { {session_paths:[''], url_root: root} }
+			context 'when request is not a session path' do
+				let(:run_config) { {session_paths:[], url_root: root} }
 				it 'returns false' do
 					expect(subject.session_path?).to be false
 				end
@@ -126,7 +130,7 @@ describe JwtAuth::AuthRequest do
 				end
 			end
 			context 'when request is not "/logout"' do
-				before { get (root+request) }
+				before { send_entry_req(request_entry_arg, root) }
 				it 'returns false' do
 					expect(subject.logout?).to be false
 				end
@@ -135,7 +139,7 @@ describe JwtAuth::AuthRequest do
 
 		describe '#token_present?' do
 			let(:run_config) { {url_root: root} }
-			before { get request }
+			before { send_entry_req(request_entry_arg, root) }
 			context 'with a set token' do
 				let(:app) { MockLogin.new(NullAppStub.new) }
 				it 'returns true' do
@@ -158,5 +162,13 @@ describe JwtAuth::AuthRequest do
 		let(:root) { junk_route }
 	end
 
-	let(:request) { junk_route }
+	let(:request_entry_arg) { junk_path_entry }
+
+	def send_entry_req(entry, root=nil)
+		if root
+			send(entry[:verb], (root+entry[:route]), entry[:params])
+		else
+			send(entry[:verb], entry[:route], entry[:params])
+		end
+	end
 end

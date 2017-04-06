@@ -10,24 +10,39 @@ describe JwtAuth::EnvConcerns do
 
 	describe '#cookie_name' do
 		context 'with configured cookie name' do
-			let(:run_config) { {cookie_name: name} }
+			let(:run_config) { {cookie_name: configured_name} }
 			it 'returns configured value' do
-				expect(subject.cookie_name).to eq name
+				expect(subject.cookie_name).to eq configured_name
 			end
-			let(:name) { junk }
 		end
 		context 'with default cookie name' do
 			let(:run_config) { {} }
-			it 'defaults to "jwt-auth"' do
-				expect(subject.cookie_name).to eq 'jwt-auth'
+			it "defaults to '#{JwtAuth::Configuration.new.ensure_cookie_name_set}'" do
+				expect(subject.cookie_name).to eq default_cookie_name
 			end
 		end
 	end
 
 	describe '#session_name' do
-		let(:run_config) { {} }
-		it "defaults to 'jwt-user-data'" do
-			expect(subject.session_name).to eq 'jwt-user-data'
+		context 'with default session name' do
+			let(:run_config) { {} }
+			it "defaults to '#{JwtAuth::Configuration.new.ensure_session_name_set}'" do
+				expect(subject.session_name).to eq default_session_name
+			end
 		end
+		context 'with configured session name' do
+			let(:run_config) { {session_name: configured_name} }
+			it 'returns configured value' do
+				expect(subject.session_name).to eq configured_name
+			end
+		end
+	end
+
+	let(:configured_name) { junk }
+	let(:default_cookie_name) do
+		JwtAuth::Configuration.new.ensure_cookie_name_set
+	end
+	let(:default_session_name) do
+		JwtAuth::Configuration.new.ensure_session_name_set
 	end
 end

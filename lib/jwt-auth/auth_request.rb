@@ -7,11 +7,11 @@ module JwtAuth
 		end
 
 		def excluded_path?
-			root_excluded_paths.include? request.path_info
+			JwtAuth.config.exclude_paths.include? request
 		end
 
 		def session_path?
-			root_session_paths.include? request.path_info
+			JwtAuth.config.session_paths.include? request
 		end
 
 		def logout?
@@ -29,14 +29,6 @@ module JwtAuth
 
 		def append_to_root(path)
 			File.join(JwtAuth.config.url_root, path)
-		end
-
-		def root_excluded_paths
-			JwtAuth.config.exclude_paths.map{ |path| append_to_root(path) }
-		end
-
-		def root_session_paths
-			JwtAuth.config.session_paths.map{ |path| append_to_root(path) }
 		end
 
 		def token

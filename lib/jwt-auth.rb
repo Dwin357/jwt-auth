@@ -13,6 +13,8 @@ require 'jwt-auth/redirect_concerns'
 require 'jwt-auth/env_concerns'
 
 require 'jwt-auth/configuration'
+require 'jwt-auth/path_entry'
+require 'jwt-auth/path_entry_collection'
 require 'jwt-auth/auth_request'
 require 'jwt-auth/jwt_token'
 

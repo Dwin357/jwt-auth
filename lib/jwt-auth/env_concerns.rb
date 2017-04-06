@@ -5,7 +5,7 @@ module JwtAuth
 		end
 
 		def session_name
-			'jwt-user-data'
+			JwtAuth.config.session_name
 		end
 	end
 end

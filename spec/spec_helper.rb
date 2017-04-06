@@ -22,13 +22,24 @@ def junk_route
 	'/'+junk
 end
 
+def junk_path_entry
+	{
+		route: junk_route,
+		verb: [:post, :get, :delete, :put, :patch].sample,
+		params: {
+			junk.to_sym => junk,
+			junk.to_sym => junk
+		}
+	}
+end
+
 def clear_config
 	JwtAuth.config.settings.clear
 end
 
 def mandatory_config
 	{
-		session_paths: [junk_route],
+		session_paths: [junk_path_entry],
 		signing_key: junk,
 		logger: NullLogger.new #not mandatory, but good for testing
 	}

@@ -8,6 +8,7 @@ module JwtAuth
 			session_paths
 			url_root
 			cookie_name
+			session_name
 			default_redirect_target
 			signing_key
 		)
@@ -33,7 +34,7 @@ module JwtAuth
 		def ensure_session_paths_set
 			case
 			when settings.include?(:session_paths)
-				nil
+				settings[:session_paths] = PathEntryCollection.new(settings[:session_paths])
 			else
 				raise Error, 'session_paths must be assigned.'
 			end
@@ -54,6 +55,15 @@ module JwtAuth
 				nil
 			else
 				settings[:cookie_name] = 'jwt-auth'
+			end
+		end
+
+		def ensure_session_name_set
+			case
+			when settings.include?(:session_name)
+				nil
+			else
+				settings[:session_name] = 'user-data'
 			end
 		end
 
@@ -81,9 +91,9 @@ module JwtAuth
 		def ensure_exclude_paths_set
 			case
 			when settings.include?(:exclude_paths)
-				nil
+				settings[:exclude_paths] = PathEntryCollection.new(settings[:exclude_paths])
 			else
-				settings[:exclude_paths] = ['']
+				settings[:exclude_paths] = PathEntryCollection.new([])
 			end
 		end
 
@@ -97,5 +107,6 @@ module JwtAuth
 		end
 
 		attr_reader :settings
+
 	end
 end

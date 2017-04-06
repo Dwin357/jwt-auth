@@ -10,8 +10,12 @@ describe JwtAuth::Configuration do
 
 	context 'when values passed in' do
 		let(:settings_hash) { passed_settings }
+		let(:untested_attributes) do
+			[:session_paths, :exclude_paths] #see special behavior section
+		end
 		it 'uses passed in settings' do
 			passed_settings.each do |key, value|
+				next if untested_attributes.include?(key)
 				expect(subject.send(key)).to eq value
 			end
 		end
@@ -38,8 +42,11 @@ describe JwtAuth::Configuration do
 		end
 
 		describe 'default exclusion paths' do
-			it 'no excluded paths' do
-				expect(subject.exclude_paths).to eq ['']
+			it 'creates a PathEntryCollection' do
+				expect(subject.exclude_paths).to be_a JwtAuth::PathEntryCollection
+			end
+			it 'collection is empty' do
+				expect(subject.exclude_paths).to be_empty
 			end
 		end
 
@@ -52,6 +59,12 @@ describe JwtAuth::Configuration do
 		describe 'default cookie name' do
 			it 'jwt-auth' do
 				expect(subject.cookie_name).to eq 'jwt-auth'
+			end
+		end
+
+		describe 'default session name' do
+			it 'jwt-auth' do
+				expect(subject.session_name).to eq 'user-data'
 			end
 		end
 
@@ -87,6 +100,48 @@ describe JwtAuth::Configuration do
 				end
 			end
 		end
+
+		describe 'session_paths' do
+			let(:settings_hash) { passed_settings }
+			context 'with correctly formated arguments' do
+				it 'creates a PathEntryCollection' do
+					expect(subject.session_paths).to be_a JwtAuth::PathEntryCollection
+				end
+			end
+			context 'when passed a singular path instead of a collection' do
+				let(:sample_session_paths) { junk_route }
+				it 'throws a JwtAuth::Configuration::Error' do
+					expect{ subject }.to raise_error JwtAuth::Configuration::Error
+				end
+			end
+			context 'when passed an invalid path entry' do
+				let(:sample_session_paths) { [junk_path_entry.merge!({route: nil})] }
+				it 'throws a JwtAuth::PathEntry::Error' do
+					expect{ subject }.to raise_error JwtAuth::PathEntry::Error
+				end
+			end
+		end
+
+		describe 'exclude_paths' do
+			let(:settings_hash) { passed_settings }
+			context 'with correctly formated arguments' do
+				it 'creates a PathEntryCollection' do
+					expect(subject.exclude_paths).to be_a JwtAuth::PathEntryCollection
+				end
+			end
+			context 'when passed a singular path instead of a collection' do
+				let(:sample_exclude_paths) { junk_route }
+				it 'throws a JwtAuth::Configuration::Error' do
+					expect{ subject }.to raise_error JwtAuth::Configuration::Error
+				end
+			end
+			context 'when passed an invalid path entry' do
+				let(:sample_exclude_paths) { [junk_path_entry.merge!({route: nil})] }
+				it 'throws a JwtAuth::PathEntry::Error' do
+					expect{ subject }.to raise_error JwtAuth::PathEntry::Error
+				end
+			end
+		end
 	end
 
 	let(:manditory_settings) do
@@ -103,6 +158,7 @@ describe JwtAuth::Configuration do
 			session_paths: sample_session_paths,
 			url_root: sample_url_root,
 			cookie_name: sample_cookie_name,
+			session_name: sample_session_name,
 			default_redirect_target: sample_default_redirect_target,
 			signing_key: sample_signing_key
 		}
@@ -111,12 +167,15 @@ describe JwtAuth::Configuration do
 	let(:bad_key) { junk.to_sym }
 	let(:rails_logger_standin) { junk }
 	let(:sample_logger) { junk }
-	let(:sample_exclude_paths) { ['/login/new', '/users/new'] }
-	let(:sample_session_paths) { ['/login', '/users'] }
+	let(:sample_exclude_paths) { [junk_path_entry, junk_path_entry] }
+	let(:sample_session_paths) { [junk_path_entry, junk_path_entry] }
 	let(:sample_url_root) { junk_route }
 	let(:sample_cookie_name) { junk }
+	let(:sample_session_name) { junk }
 	let(:sample_default_redirect_target) { junk_route }
 	let(:sample_signing_key) { junk }
+
+	let(:path_entry) { junk_path_entry }
 
 	def stub(stubbie)
 		stub_const stubbie, Class.new
